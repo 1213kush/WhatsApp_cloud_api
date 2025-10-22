@@ -3,7 +3,7 @@ from flask import Flask, request
 app = Flask(__name__)
 
 # Your chosen VERIFY TOKEN (keep it short and simple, not your access token!)
-VERIFY_TOKEN = "EAALMPC0iJqEBPZBw4GVZBEIO7EitHbKE2mLhO101gPtvPFRDyaBwdQb1aaEPejQW1QCF44b54tZBRNRLh0ylaXrVswYAg5jaixGfQK5ZC9MqAflTeK85TMDn826sHdRZBkHFHbAkPuWc3fwZB6zQp0vWQfqtTxVbukdpevBbURZCfy6YA7GuO7nxFXk0kThKXqO1TbnLsxMKuL1AOVKhcmAksAkaydhWEFTHqiMmgaSHPGZCGv0gDYe12LsbWehZCF8kJjfTwMjjofWGo51ZC0TaR0"
+VERIFY_TOKEN = "ankushwebhook123"
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
