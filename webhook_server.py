@@ -1,37 +1,34 @@
-// Import Express.js
-const express = require('express');
+from flask import Flask, request, jsonify
+import os
+from datetime import datetime
 
-// Create an Express app
-const app = express();
+app = Flask(__name__)
 
-// Middleware to parse JSON bodies
-app.use(express.json());
+# Set port and verify_token from environment variables
+PORT = int(os.environ.get('PORT', 3000))
+VERIFY_TOKEN = os.environ.get('VERIFY_TOKEN')
 
-// Set port and verify_token
-const port = process.env.PORT || 3000;
-const verifyToken = process.env.VERIFY_TOKEN;
+# Route for GET requests (webhook verification)
+@app.route('/', methods=['GET'])
+def verify_webhook():
+    mode = request.args.get('hub.mode')
+    token = request.args.get('hub.verify_token')
+    challenge = request.args.get('hub.challenge')
+    
+    if mode == 'subscribe' and token == VERIFY_TOKEN:
+        print('WEBHOOK VERIFIED')
+        return challenge, 200
+    else:
+        return 'Verification token mismatch', 403
 
-// Route for GET requests
-app.get('/', (req, res) => {
-  const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
+# Route for POST requests (webhook events)
+@app.route('/', methods=['POST'])
+def webhook():
+    timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    print(f'\n\nWebhook received {timestamp}\n')
+    print(request.json)
+    return '', 200
 
-  if (mode === 'subscribe' && token === verifyToken) {
-    console.log('WEBHOOK VERIFIED');
-    res.status(200).send(challenge);
-  } else {
-    res.status(403).end();
-  }
-});
-
-// Route for POST requests
-app.post('/', (req, res) => {
-  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
-  console.log(`\n\nWebhook received ${timestamp}\n`);
-  console.log(JSON.stringify(req.body, null, 2));
-  res.status(200).end();
-});
-
-// Start the server
-app.listen(port, () => {
-  console.log(`\nListening on port ${port}\n`);
-});
+if __name__ == '__main__':
+    print(f'\nListening on port {PORT}\n')
+    app.run(host='0.0.0.0', port=PORT)
