@@ -1,28 +1,37 @@
-from flask import Flask, request
+// Import Express.js
+const express = require('express');
 
-app = Flask(__name__)
+// Create an Express app
+const app = express();
 
-VERIFY_TOKEN = "ngrok config add-authtoken 2srHFnhm1AjFEruWzLrak7Hzi7a_SBwWN77vuMYS4qmePmRM"
+// Middleware to parse JSON bodies
+app.use(express.json());
 
-@app.route("/webhook", methods=["GET", "POST"])
-def webhook():
-    if request.method == "GET":
-        mode = request.args.get("hub.mode")
-        token = request.args.get("hub.verify_token")
-        challenge = request.args.get("hub.challenge")
+// Set port and verify_token
+const port = process.env.PORT || 3000;
+const verifyToken = process.env.VERIFY_TOKEN;
 
-        if mode == "subscribe" and token == VERIFY_TOKEN:
-            print("✅ WEBHOOK VERIFIED!")
-            return challenge, 200
-        else:
-            print("❌ VERIFICATION FAILED.")
-            return "Verification failed", 403
+// Route for GET requests
+app.get('/', (req, res) => {
+  const { 'hub.mode': mode, 'hub.challenge': challenge, 'hub.verify_token': token } = req.query;
 
-    elif request.method == "POST":
-        data = request.get_json()
-        print("📩 Received:", data)
-        return "EVENT_RECEIVED", 200
+  if (mode === 'subscribe' && token === verifyToken) {
+    console.log('WEBHOOK VERIFIED');
+    res.status(200).send(challenge);
+  } else {
+    res.status(403).end();
+  }
+});
 
+// Route for POST requests
+app.post('/', (req, res) => {
+  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  console.log(`\n\nWebhook received ${timestamp}\n`);
+  console.log(JSON.stringify(req.body, null, 2));
+  res.status(200).end();
+});
 
-if __name__ == "__main__":
-    app.run(port=8000)
+// Start the server
+app.listen(port, () => {
+  console.log(`\nListening on port ${port}\n`);
+});
